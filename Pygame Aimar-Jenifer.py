@@ -15,17 +15,14 @@ bate = pygame.transform.scale(bate, (100, 30))#Da un tamaño al bate
 baterect = bate.get_rect()#Obtengo el rectangulo de el bate
 baterect.move_ip(270,450)#Las coordenadas de donde aparece el bate
 
-
-# Contador de golpes con la barra
-hit_counter = 0
-acceleration_threshold = 3  # Aumentar la velocidad de la pelota cada 3 golpes
-
+hit_counter = 0#Contador de golpes con la barra
+acceleration_threshold = 3#Aumentar la velocidad de la pelota cada 3 golpes
 
 jugando = True#Inicia el juego
-while jugando:
+while jugando:#Bucle del juego
     for event in pygame.event.get():#Comprueba los eventos
         if event.type == pygame.QUIT:#Comprueba si se ha pulsado el boton de cierre de la pantalla
-            jugando = False
+            jugando = False#Cierra el juego despues de haber pulsado la "X"
 
     keys = pygame.key.get_pressed()#Compruebo si se ha pulsado alguna tecla
     if keys[pygame.K_LEFT]:#Comprueba si se ha pulsado la tecla (Left)
@@ -33,18 +30,16 @@ while jugando:
     if keys[pygame.K_RIGHT]:#Comprueba si se ha pulsado la tecla (Right)
         baterect = baterect.move(8,0)#Da una velocidad al movimiento del bate
 
-   
-    ballrect = ballrect.move(speed)#Da en el juego a la bola la velocidad que le hemos puesto en la lista
+    ballrect = ballrect.move(speed)#Hace que se mueva la bola
     if ballrect.left < 0 or ballrect.right > ventana.get_width():#Comprueba el limite de la ventana de la parte de los laterales
         speed[0] = -speed[0]#Modifica el sentido de la bola de las posiciones X, Y
     if ballrect.top < 0 or ballrect.bottom > ventana.get_height():#Comprueba el limite de la ventana de la parte superior e inferior
         speed[1] = -speed[1]#Modifica el sentido de la bola de las posiciones X, Y
  
-
     if baterect.colliderect(ballrect):#Colisión de la pelota con la barra
-        speed[1] = -speed[1]
-        hit_counter += 1
-        if hit_counter % acceleration_threshold == 0:
+        speed[1] = -speed[1]#Modifica el sentido de la bola de las posiciones X, Y
+        hit_counter += 1#Suma uno cada vez que la bola haya rebotado 3 veces en la barra
+        if hit_counter % acceleration_threshold == 0:#Calcula el multiplo de los golpes asignados
             speed[0] *= 1.5#Aumentar la velocidad de la pelota
 
 
