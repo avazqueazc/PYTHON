@@ -41,15 +41,11 @@ while jugando:
         speed[1] = -speed[1]#Modifica el sentido de la bola de las posiciones X, Y
  
 
-
     if baterect.colliderect(ballrect):#Colisión de la pelota con la barra
         speed[1] = -speed[1]
         hit_counter += 1
         if hit_counter % acceleration_threshold == 0:
-            speed[0] *= 2  # Aumentar la velocidad de la pelota
-
-
-
+            speed[0] *= 1.5#Aumentar la velocidad de la pelota
 
 
     fondo = pygame.image.load("cielo.png").convert()#Inserta una imagen de fondo de pantalla
