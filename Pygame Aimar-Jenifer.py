@@ -33,15 +33,14 @@ while jugando:#Bucle del juego
     ballrect = ballrect.move(speed)#Hace que se mueva la bola
     if ballrect.left < 0 or ballrect.right > ventana.get_width():#Comprueba el limite de la ventana de la parte de los laterales
         speed[0] = -speed[0]#Modifica el sentido de la bola de las posiciones X, Y
-    if ballrect.top < 0 or ballrect.bottom > ventana.get_height():#Comprueba el limite de la ventana de la parte superior e inferior
+    if ballrect.top < 0:#Comprueba el limite de la ventana de la parte superior e inferior
         speed[1] = -speed[1]#Modifica el sentido de la bola de las posiciones X, Y
- 
+
     if baterect.colliderect(ballrect):#Colisión de la pelota con la barra
         speed[1] = -speed[1]#Modifica el sentido de la bola de las posiciones X, Y
         hit_counter += 1#Suma uno cada vez que la bola haya rebotado 3 veces en la barra
         if hit_counter % acceleration_threshold == 0:#Calcula el multiplo de los golpes asignados
             speed[0] *= 1.5#Aumentar la velocidad de la pelota
-
 
     fondo = pygame.image.load("cielo.png").convert()#Inserta una imagen de fondo de pantalla
     fondo = pygame.transform.scale(fondo, (640, 480))#Ajusta el tamaño de la imagen al de la pantalla
@@ -49,6 +48,11 @@ while jugando:#Bucle del juego
     ventana.blit(fondo, (0, 0))#Dibuja el fondo en la pantalla
     ventana.blit(ball, ballrect)#Dibuja la bola en la pantalla
     ventana.blit(bate, baterect)#Dibuja el bate en la pantalla
+
+    if ballrect.bottom > ventana.get_height():#Comprueba si has perdido al tocar el fondo
+        gameover = pygame.image.load("Game Over.jpg").convert_alpha()#Convierte la imagen en la pantalla
+        gameover = pygame.transform.scale(gameover, (640, 480))#Da el tamaño de la ventana a la imagen
+        ventana.blit(gameover, (0, 0))#Son las coordenadas donde inserta la imagen
 
     pygame.display.flip()#Todos los elementos del juego se vuelven a dibujar
     pygame.time.Clock().tick(60)#Controlador de frecuencia de refresco(FPS)
