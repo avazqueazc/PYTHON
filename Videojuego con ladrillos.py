@@ -1,5 +1,5 @@
 import pygame
-import randint
+import random
 
 class Ladrillo(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
@@ -22,9 +22,19 @@ class Ladrillo(pygame.sprite.Sprite):
     def romper(self):
         self.roto = True
 
+# Inicializar pygame
 pygame.init()
 ventana = pygame.display.set_mode((640,480))
 pygame.display.set_caption("Pygame")
+
+# Cargar la música de fondo
+pygame.mixer.music.load("Ground Theme.mp3")
+
+# Cargar la música de victoria
+victoria_sound = pygame.mixer.Sound("Castle Complete.mp3")
+
+# Cargar la música de derrota
+derrota_sound = pygame.mixer.Sound("Game Over.mp3")
 
 ball = pygame.image.load("ball mario.png")
 ball = pygame.transform.scale(ball, (50, 50))
@@ -56,48 +66,75 @@ for row in range(rows):
         ladrillos.append(ladrillo)
 
 hit_counter = 0
-acceleration_threshold = 3
+acceleration_threshold = 5
 
 jugando = True
+victoria = False
+derrota = False
+
+# Reproducir la música de fondo en bucle
+pygame.mixer.music.play(-1)
+
 while jugando:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             jugando = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        baterect = baterect.move(-20, 0)
-    if keys[pygame.K_RIGHT]:
-        baterect = baterect.move(20, 0)
+    if not victoria and not derrota:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            baterect = baterect.move(-20, 0)
+        if keys[pygame.K_RIGHT]:
+            baterect = baterect.move(20, 0)
 
-    ballrect = ballrect.move(speed)
-    if ballrect.left < 0 or ballrect.right > ventana.get_width():
-        speed[0] = -speed[0]
-    if ballrect.top < 0:
-        speed[1] = -speed[1]
-
-    for ladrillo in ladrillos:
-        if not ladrillo.roto and ballrect.colliderect(ladrillo.rect):
-            ladrillo.romper()
+        ballrect = ballrect.move(speed)
+        if ballrect.left < 0 or ballrect.right > ventana.get_width():
+            speed[0] = -speed[0]
+        if ballrect.top < 0:
             speed[1] = -speed[1]
-            break
 
-    if ballrect.colliderect(baterect):
-        speed[1] = -speed[1]
+        for ladrillo in ladrillos:
+            if not ladrillo.roto and ballrect.colliderect(ladrillo.rect):
+                ladrillo.romper()
+                speed[1] = -speed[1]
+                break
 
-    fondo = pygame.image.load("cielo.png").convert()
-    fondo = pygame.transform.scale(fondo, (640, 480))
+        if ballrect.colliderect(baterect):
+            speed[1] = -speed[1]#Modifica el sentido de la bola de las posiciones X, Y
+            hit_counter += 1#Suma uno cada vez que la bola haya rebotado 5 veces en la barra
+            if hit_counter % acceleration_threshold == 0:#Calcula el multiplo de los golpes asignados
+                speed[0] *= 1.2
 
-    ventana.blit(fondo, (0, 0))
-    
-    for ladrillo in ladrillos:
-        if not ladrillo.roto:
-            ventana.blit(ladrillo.image, ladrillo.rect)
+        fondo = pygame.image.load("cielo.png").convert()
+        fondo = pygame.transform.scale(fondo, (640, 480))
 
-    ventana.blit(ball, ballrect)
-    ventana.blit(bate, baterect)
+        ventana.blit(fondo, (0, 0))
 
-    if ballrect.bottom > ventana.get_height():
+        for ladrillo in ladrillos:
+            if not ladrillo.roto:
+                ventana.blit(ladrillo.image, ladrillo.rect)
+
+        ventana.blit(ball, ballrect)
+        ventana.blit(bate, baterect)
+
+        # Comprobar si se ha ganado el juego
+        if all(ladrillo.roto for ladrillo in ladrillos):
+            # Detener la música de fondo
+            pygame.mixer.music.stop()
+            # Reproducir la música de victoria
+            victoria_sound.play()
+            victoria = True
+
+        if ballrect.bottom > ventana.get_height():
+            # Detener la música de fondo
+            pygame.mixer.music.stop()
+            # Reproducir la música de derrota
+            derrota_sound.play()
+            derrota = True
+
+    elif victoria:
+        ventana.blit(victoria_image, (0, 0))
+    elif derrota:
         gameover = pygame.image.load("Game Over.jpg").convert_alpha()
         gameover = pygame.transform.scale(gameover, (640, 480))
         ventana.blit(gameover, (0, 0))
