@@ -1,5 +1,5 @@
 import pygame
-import random
+import randint
 
 class Ladrillo(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
