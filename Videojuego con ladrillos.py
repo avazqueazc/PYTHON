@@ -1,110 +1,59 @@
 import pygame
+import random
 
-class Ladrillo1(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+class Ladrillo(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
         super().__init__()
-        self._image = pygame.image.load("ladrillos.png").convert_alpha()  # Cargar imagen del ladrillo 1
-        self._rect = self._image.get_rect(topleft=(x, y))
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (60, 20))  # Ajusta el tamaño de los ladrillos
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self._roto = False
 
     @property
-    def image(self):
-        return self._image
+    def roto(self):
+        return self._roto
 
-    @image.setter
-    def image(self, value):
-        self._image = value
+    @roto.setter
+    def roto(self, value):
+        self._roto = value
 
-    @property
-    def rect(self):
-        return self._rect
-
-    @rect.setter
-    def rect(self, value):
-        self._rect = value
-
-    def update(self):
-        if self.rect.colliderect(ballrect):
-            self.kill()
-
-class Ladrillo2(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self._image = pygame.image.load("ladrillo2.png").convert_alpha()  # Cargar imagen del ladrillo 2
-        self._rect = self._image.get_rect(topleft=(x, y))
-        self._broken = False
-
-    @property
-    def image(self):
-        return self._image
-
-    @image.setter
-    def image(self, value):
-        self._image = value
-
-    @property
-    def rect(self):
-        return self._rect
-
-    @rect.setter
-    def rect(self, value):
-        self._rect = value
-
-    @property
-    def broken(self):
-        return self._broken
-
-    @broken.setter
-    def broken(self, value):
-        self._broken = value
-
-    def update(self):
-        if self.rect.colliderect(ballrect) and not self.broken:
-            self.image = pygame.image.load("ladrillo2_broken.png").convert_alpha()  # Cambiar imagen al ladrillo roto
-            self.broken = True
-        elif self.broken and self.rect.colliderect(ballrect):
-            pass
-
-class Ladrillo3(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self._image = pygame.image.load("ladrillo3.png").convert_alpha()  # Cargar imagen del ladrillo 3
-        self._rect = self._image.get_rect(topleft=(x, y))
-
-    @property
-    def image(self):
-        return self._image
-
-    @image.setter
-    def image(self, value):
-        self._image = value
-
-    @property
-    def rect(self):
-        return self._rect
-
-    @rect.setter
-    def rect(self, value):
-        self._rect = value
-
-    def update(self):
-        pass
-
-# Aquí empieza el código del juego
+    def romper(self):
+        self.roto = True
 
 pygame.init()
-ventana = pygame.display.set_mode((640, 480))
+ventana = pygame.display.set_mode((640,480))
 pygame.display.set_caption("Pygame")
 
 ball = pygame.image.load("ball mario.png")
 ball = pygame.transform.scale(ball, (50, 50))
 ballrect = ball.get_rect()
-speed = [8, 8]
-ballrect.move_ip(0, 0)
+speed = [10, -10]  # Cambia la dirección de movimiento de la bola para que vaya hacia arriba
+ballrect.move_ip(0, 400)  # Ajusta la posición inicial de la bola debajo de los ladrillos
 
 bate = pygame.image.load("bate mario.png")
 bate = pygame.transform.scale(bate, (100, 30))
 baterect = bate.get_rect()
 baterect.move_ip(270, 450)
+
+ladrillos = []
+ladrillo_width = 60
+ladrillo_height = 20
+columns = 10
+rows = 3  # Añade dos filas más de ladrillos
+horizontal_gap = 5
+vertical_gap = 10  # Espacio entre filas de ladrillos
+total_width = columns * (ladrillo_width + horizontal_gap)
+x_offset = (ventana.get_width() - total_width) // 2
+y_offset = 10  # Ajusta la posición vertical de los ladrillos en la parte superior de la ventana
+
+for row in range(rows):
+    for column in range(columns):
+        x = x_offset + column * (ladrillo_width + horizontal_gap)
+        y = y_offset + row * (ladrillo_height + vertical_gap)
+        ladrillo = Ladrillo("ladrillo.png", x, y)
+        ladrillos.append(ladrillo)
 
 hit_counter = 0
 acceleration_threshold = 3
@@ -117,9 +66,9 @@ while jugando:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
-        baterect = baterect.move(-8, 0)
+        baterect = baterect.move(-20, 0)
     if keys[pygame.K_RIGHT]:
-        baterect = baterect.move(8, 0)
+        baterect = baterect.move(20, 0)
 
     ballrect = ballrect.move(speed)
     if ballrect.left < 0 or ballrect.right > ventana.get_width():
@@ -127,18 +76,31 @@ while jugando:
     if ballrect.top < 0:
         speed[1] = -speed[1]
 
-    if baterect.colliderect(ballrect):
+    for ladrillo in ladrillos:
+        if not ladrillo.roto and ballrect.colliderect(ladrillo.rect):
+            ladrillo.romper()
+            speed[1] = -speed[1]
+            break
+
+    if ballrect.colliderect(baterect):
         speed[1] = -speed[1]
-        hit_counter += 1
-        if hit_counter % acceleration_threshold == 0:
-            speed[0] *= 1.5
 
     fondo = pygame.image.load("cielo.png").convert()
     fondo = pygame.transform.scale(fondo, (640, 480))
-    
+
     ventana.blit(fondo, (0, 0))
+    
+    for ladrillo in ladrillos:
+        if not ladrillo.roto:
+            ventana.blit(ladrillo.image, ladrillo.rect)
+
     ventana.blit(ball, ballrect)
     ventana.blit(bate, baterect)
+
+    if ballrect.bottom > ventana.get_height():
+        gameover = pygame.image.load("Game Over.jpg").convert_alpha()
+        gameover = pygame.transform.scale(gameover, (640, 480))
+        ventana.blit(gameover, (0, 0))
 
     pygame.display.flip()
     pygame.time.Clock().tick(60)
